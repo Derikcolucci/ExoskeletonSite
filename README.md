@@ -2,6 +2,8 @@
 
 **ExoSite** is a full-stack web application currently featuring a React-based frontend and a planned Express.js backend. The goal of this project is to serve as an interactive platform for managing and monitoring exoskeleton systems, with real-time data visualization and control capabilities.
 
+🌐 Hosted at: https://exoskeletonsite.netlify.app/
+
 ---
 
 ## 📁 Project Structure
