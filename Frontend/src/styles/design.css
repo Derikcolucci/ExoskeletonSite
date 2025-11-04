@@ -1,0 +1,359 @@
+/* ==============================
+   Reset Page
+============================== */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: "Inter", sans-serif;
+  scroll-behavior: smooth;
+}
+
+/* ==============================
+   Design Page Base
+============================== */
+.design-page {
+  color: #111;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ==============================
+   Navbar
+============================== */
+.design-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 2rem;
+  border-bottom: 2px solid black;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Thin bar under navbar */
+.navbar-separator {
+  height: 4px;
+  background-color: #000;
+  width: 100%;
+}
+
+/* ==============================
+   Mission Statement
+============================== */
+.mission-statement {
+  height: 75vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: #fff;
+  padding: 0 1rem;
+}
+
+.mission-statement h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.mission-statement p {
+  font-size: 1.5rem;
+  max-width: 700px;
+}
+
+/* ==============================
+   Current Design Section
+============================== */
+.current-design-section {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 2rem 3rem 1rem;
+  gap: 2rem;
+  flex-wrap: wrap;
+  min-height: 60vh;
+}
+
+.current-design-section .description {
+  flex: 1;
+  min-width: 300px;
+  margin-right: 2rem;
+  color: #111;
+  position: relative;
+}
+
+.current-design-section .description h2 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #111;
+}
+
+.current-design-section .description ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin: 0 0 1rem 0;
+}
+
+.current-design-section .description ul li {
+  font-size: 1.25rem;
+  line-height: 1.8;
+  margin-bottom: 0.8rem;
+  color: #333;
+}
+
+.current-design-section .description p {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: #333;
+}
+
+.current-design-section .model {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==============================
+   Latest Version Badge
+============================== */
+.current-design-section .badge {
+  display: inline-block;
+  background: linear-gradient(
+    135deg,
+    #0D47A1 0%,
+    #1565C0 70%,
+    #4A90E2 100%
+  ); 
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.45rem 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+/* ==============================
+   Tech Stack Section
+============================== */
+.tech-stack-section {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  max-width: none;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+  min-height: 80vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #fff;
+  position: relative;
+  flex-wrap: wrap;
+}
+
+/* Tech Stack Section Title */
+.tech-stack-title {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #fff;
+  z-index: 10;
+}
+
+/* Tech info (text) */
+.tech-stack-section .tech-info {
+  flex: 1;
+  margin-right: 3rem;
+  padding-top: 8rem;
+  padding-left: 1rem;
+  padding-right: 7rem;
+  padding-bottom: 2rem;
+}
+
+.tech-stack-section .tech-info h3 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.tech-stack-section .tech-info ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin: 0 0 1rem 0;
+}
+
+.tech-stack-section .tech-info ul li {
+  font-size: 1.25rem;
+  line-height: 1.8;
+  margin-bottom: 0.8rem;
+  color: #fff;
+}
+
+.tech-stack-section .tech-info p {
+  font-size: 1.5rem;
+  line-height: 1.6;
+}
+
+/* Make images bolder without box */
+.tech-stack-section .tech-item img {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  object-fit: contain;
+  filter: brightness(1.1) contrast(1.2);
+  transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+.tech-stack-section .tech-item img:hover {
+  filter: brightness(1.2) contrast(1.3) saturate(1.2);
+  transform: scale(1.05);
+}
+
+/* Carousel wrapper */
+.tech-carousel-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 6rem;
+}
+
+/* Carousel 3D container */
+.tech-stack-section .tech-carousel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1200px;
+  position: relative;
+  height: 250px;
+  padding-top: 6rem;
+}
+
+/* Individual carousel item */
+.tech-stack-section .tech-item {
+  width: 275px;
+  height: 275px;
+  margin: 0 1.25rem;
+  background: transparent; /* Removed box */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease, opacity 0.5s ease;
+  cursor: pointer;
+  position: absolute;
+}
+
+/* Carousel indicators */
+.tech-carousel-dots {
+  margin-top: 5rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.tech-carousel-dots .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.tech-carousel-dots .dot.active {
+  background: #00ffff;
+  transform: scale(1.3);
+  border: 1px solid white;
+}
+
+/* ==============================
+   Scroll to Top Button
+============================== */
+.scroll-top-btn {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid black;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: black;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease, transform 0.2s ease, opacity 0.3s ease;
+  z-index: 1000;
+}
+
+.scroll-top-btn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  transform: translateX(-50%) scale(1.1);
+}
+
+/* ==============================
+   Responsive Adjustments
+============================== */
+@media (max-width: 1024px) {
+  .current-design-section,
+  .tech-stack-section {
+    flex-direction: column;
+    padding: 2rem 1rem;
+  }
+
+  .current-design-section .description,
+  .tech-stack-section .tech-info {
+    margin-right: 0;
+    padding-right: 0;
+    margin-bottom: 2rem;
+  }
+
+  .current-design-section .model,
+  .tech-stack-section .tech-carousel {
+    width: 100%;
+    height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mission-statement h1 {
+    font-size: 2.5rem;
+  }
+
+  .mission-statement p {
+    font-size: 1.2rem;
+  }
+
+  .tech-stack-title {
+    font-size: 2.5rem;
+  }
+
+  .tech-stack-section .tech-info h3 {
+    font-size: 1.75rem;
+  }
+
+  .tech-stack-section .tech-info ul li {
+    font-size: 1.1rem;
+  }
+}
