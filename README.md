@@ -11,15 +11,37 @@
 ```
 ExoSite/
 │
-├── Frontend/              # React.js frontend
-│   ├── public/             # Static files
-│   ├── src/                # Main React source code
-│   ├── package.json        # Frontend dependencies
-│   └── .gitignore          # Frontend gitignore rules
+├── Arduino/                               # Arduino + ESP32 related code
+│   └── arduino_current.txt                # Placeholder for ESP32 code for Mayoware v1 sensor
+│   └── libraries.txt                      # File for necessary ESP32 libraries
 │
-├── Backend/               # Placeholder for Express.js backend
+├── apps/
+│   ├── frontend/                           # React.js frontend application
+│   │   ├── public/                         # Static public files (index.html, icons, etc.)
+│   │   │
+│   │   ├── src/                            # Main React source code
+│   │   │   ├── assets/                     # Images, fonts, media files
+│   │   │   ├── components/                 # Reusable UI components
+│   │   │   ├── data/                       # JSON files, local data, mock API data
+│   │   │   ├── models/                     # Classes, TypeScript interfaces, schemas
+│   │   │   ├── pages/                      # Page-level components (views/routes)
+│   │   │   ├── styles/                     # CSS/SCSS/global styling
+│   │   │
+│   │   ├── package.json                    # Frontend dependencies & scripts
+│   │   ├── .env.example                    # Example environment variables template
+│   │   └── .gitignore                      # Frontend-specific git ignore rules
+│   │
+│   └── backend/                            # Express.js backend API
+│       ├── main/                           # Main application logic
+│       ├── utils/                          # Utility functions, helpers, shared backend logic
+│       │
+│       ├── package.json                    # Backend dependencies & scripts
+│       ├── .env.example                    # Example backend environment variable file
+│       └── .gitignore                      # Backend git ignore rules
 │
-└── README.md              # Project documentation
+├── .gitignore                              # Root-level git ignore
+├── README.md                               # Documentation for the entire project
+└── package.json                             # Optional root package.json
 ```
 
 ---
