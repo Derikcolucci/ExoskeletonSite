@@ -6,18 +6,18 @@ const EMGChart = ({ wsUrl }) => {
   const chartRef = useRef(null);
   const [chartInstance, setChartInstance] = useState(null);
 
-  // Initialize chart
+  // Initialize chart (same as before)
   useEffect(() => {
     const ctx = chartRef.current.getContext("2d");
 
     const newChart = new Chart(ctx, {
       type: "line",
       data: {
-        labels: [],
+        labels: [], // starts empty
         datasets: [
           {
             label: "EMG Voltage (V)",
-            data: [],
+            data: [], // starts empty
             borderColor: "rgb(75, 192, 192)",
             tension: 0.2,
             fill: false,
@@ -36,15 +36,14 @@ const EMGChart = ({ wsUrl }) => {
 
     setChartInstance(newChart);
 
-    // Cleanup: destroy chart on unmount
     return () => {
       newChart.destroy();
     };
   }, []);
 
-  // Handle WebSocket data
+  // Handle WebSocket data (only if wsUrl exists)
   useEffect(() => {
-    if (!chartInstance || !wsUrl) return;
+    if (!chartInstance || !wsUrl) return; // Skip WebSocket in production
 
     const ws = new WebSocket(wsUrl);
 
@@ -57,11 +56,11 @@ const EMGChart = ({ wsUrl }) => {
         const voltage = JSON.parse(event.data).voltage;
         const data = chartInstance.data;
 
-        // Use timestamp as x-axis label for better readability
+        // Add timestamp label
         data.labels.push(new Date().toLocaleTimeString());
         data.datasets[0].data.push(voltage);
 
-        // Keep only the last 500 points
+        // Keep only last 500 points
         if (data.labels.length > 500) {
           data.labels.shift();
           data.datasets[0].data.shift();
@@ -73,7 +72,6 @@ const EMGChart = ({ wsUrl }) => {
       }
     };
 
-    // Cleanup WebSocket on unmount
     return () => ws.close();
   }, [chartInstance, wsUrl]);
 

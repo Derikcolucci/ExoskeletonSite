@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/team.css"; // keeps your existing styling
+import "../styles/team.css";
 import navBackground from "../assets/background1.jpg";
 
 const Navbar = ({ teamMembers, onSelect }) => {
@@ -38,13 +38,7 @@ const Navbar = ({ teamMembers, onSelect }) => {
               {member.name}
             </button>
           ))}
-          {/* EMG Page Button */}
-          <button
-            className="team-nav-btn"
-            onClick={() => navigate("/emg-live")}
-          >
-            EMG Live
-          </button>
+          {/* EMG Live button removed from desktop navbar */}
         </div>
       </nav>
 
@@ -72,7 +66,7 @@ const Navbar = ({ teamMembers, onSelect }) => {
           >
             Team
           </button>
-          {/* EMG Page Button */}
+          {/* EMG Page Button only in hamburger menu */}
           <button
             className="team-nav-btn"
             onClick={() => {

@@ -5,13 +5,11 @@ import headingBackground from "../assets/background3.jpg";
 import "../styles/EMG.css";
 
 const EMGPage = () => {
-  // Automatically switch WebSocket URL between local hotspot and production
-  const backendIp =
+  // Automatically switch WebSocket URL between local testing and static preview
+  const wsUrl =
     window.location.hostname === "localhost"
-      ? "172.20.10.12" // local IP of your computer when using hotspot
-      : "exoskeletonsite.netlify.app"; // production domain
-
-  const wsUrl = `ws://${backendIp}:8000/ws`; // WebSocket URL (adjust port if different)
+      ? "ws://172.20.10.12:8000/ws" // Local backend
+      : null; // No backend on Netlify, use dummy data
 
   return (
     <div className="emg-page">
