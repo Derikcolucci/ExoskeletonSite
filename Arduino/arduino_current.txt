@@ -1,0 +1,62 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+
+// ======== CONFIG ========
+const char* ssid = "";          // Your hotspot SSID
+const char* password = ""; // Hotspot password
+
+// Toggle between local testing and Netlify
+#define USE_LOCAL true  // Set to false to use Netlify
+
+#if USE_LOCAL
+const char* serverUrl = "http://192.168.1.10:3000/emg-live"; // Local backend IP
+#else
+const char* serverUrl = "https://exoskeletonsite.netlify.app/.netlify/functions/emg-live
+"; // Netlify endpoint
+#endif
+
+const int emgPin = 34;          // Analog pin connected to EMG sensor
+const int readInterval = 10;    // milliseconds (~100 Hz)
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
+  Serial.print("Connecting to WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi connected!");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void loop() {
+  int rawValue = analogRead(emgPin);           // Read EMG sensor (0-4095)
+  float voltage = (rawValue / 4095.0) * 3.3;  // Convert to voltage
+
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    http.begin(serverUrl);
+    http.addHeader("Content-Type", "application/json");
+
+    String payload = "{\"voltage\": " + String(voltage, 3) + "}";
+    int httpResponseCode = http.POST(payload);
+
+    if (httpResponseCode > 0) {
+      Serial.println("Sent: " + payload);
+    } else {
+      Serial.println("Error sending data: " + String(httpResponseCode));
+    }
+
+    http.end();
+  } else {
+    Serial.println("WiFi disconnected. Reconnecting...");
+    WiFi.disconnect();
+    WiFi.begin(ssid, password);
+  }
+
+  delay(readInterval);
+}

@@ -1,0 +1,16 @@
+# Arduino Libraries Required for ESP32 EMG Project
+
+1. ESP32 Board Package
+   - Name: "esp32"
+   - Install via Arduino IDE: 
+     Tools → Board → Boards Manager → Search "esp32" → Install "esp32 by Espressif Systems"
+   - Includes:
+     * WiFi.h
+     * HTTPClient.h
+
+# No additional external libraries are needed beyond the ESP32 core.
+
+# Notes:
+- Make sure your Arduino IDE is updated to the latest version.
+- Select the correct board: Tools → Board → ESP32 Dev Module
+- Select the correct COM port before uploading.

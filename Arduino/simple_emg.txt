@@ -1,0 +1,13 @@
+int emgPin = 34;       // MyoWare analog output connected to GPIO34
+int threshold = 1500;  // Adjust based on your EMG readings (0-4095)
+
+void setup() {
+  Serial.begin(115200); // To monitor EMG values
+}
+
+void loop() {
+  int emgValue = analogRead(emgPin); // Read EMG sensor
+  Serial.println(emgValue);          // See readings for threshold adjustment
+
+  delay(10); // Small delay for stability
+}

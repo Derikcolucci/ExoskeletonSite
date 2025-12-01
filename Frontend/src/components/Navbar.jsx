@@ -38,6 +38,13 @@ const Navbar = ({ teamMembers, onSelect }) => {
               {member.name}
             </button>
           ))}
+          {/* EMG Page Button */}
+          <button
+            className="team-nav-btn"
+            onClick={() => navigate("/emg-live")}
+          >
+            EMG Live
+          </button>
         </div>
       </nav>
 
@@ -64,6 +71,16 @@ const Navbar = ({ teamMembers, onSelect }) => {
             }}
           >
             Team
+          </button>
+          {/* EMG Page Button */}
+          <button
+            className="team-nav-btn"
+            onClick={() => {
+              navigate("/emg-live"); // Go to EMGPage
+              setIsOpen(false);
+            }}
+          >
+            EMG Live
           </button>
         </div>
       </div>

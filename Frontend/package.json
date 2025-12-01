@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "ExoSite frontend React app",
   "scripts": {
@@ -13,6 +13,7 @@
     "@google/model-viewer": "^4.1.0",
     "@react-three/drei": "^9.56.3",
     "@react-three/fiber": "^8.13.0",
+    "chart.js": "^4.5.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.9.5",
