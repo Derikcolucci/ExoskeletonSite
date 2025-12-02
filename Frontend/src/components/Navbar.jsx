@@ -38,14 +38,6 @@ const Navbar = ({ teamMembers, onSelect }) => {
               {member.name}
             </button>
           ))}
-          {/* EMG Page Button */}
-          <button
-            className="team-nav-btn"
-            style={{ color: "#fff" }}
-            onClick={() => navigate("/emg-live")}
-          >
-            EMG Live
-          </button>
         </div>
       </nav>
 
