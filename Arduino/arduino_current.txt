@@ -3,20 +3,13 @@
 
 // ======== CONFIG ========
 const char* ssid = "";          // Your hotspot SSID
-const char* password = ""; // Hotspot password
-
-// Toggle between local testing and Netlify
-#define USE_LOCAL true  // Set to false to use Netlify
-
-#if USE_LOCAL
-const char* serverUrl = "http://192.168.1.10:3000/emg-live"; // Local backend IP
-#else
-const char* serverUrl = "https://exoskeletonsite.netlify.app/.netlify/functions/emg-live
-"; // Netlify endpoint
-#endif
+const char* password = "";    // Hotspot password
 
 const int emgPin = 34;          // Analog pin connected to EMG sensor
 const int readInterval = 10;    // milliseconds (~100 Hz)
+const int serverPort = 8000;    // Backend port
+
+String serverIP;                // Will store backend IP entered via Serial (can be found with IPv4 Address using ipconfig in bash)
 
 void setup() {
   Serial.begin(115200);
@@ -29,8 +22,19 @@ void setup() {
     Serial.print(".");
   }
   Serial.println("\nWiFi connected!");
-  Serial.print("IP Address: ");
+  Serial.print("ESP32 IP Address: ");
   Serial.println(WiFi.localIP());
+
+  // Ask user for backend IP
+  Serial.println("Enter backend PC IP (LAN IP), then press Enter:");
+  while (Serial.available() == 0) {
+    delay(100); // Wait for input
+  }
+  serverIP = Serial.readStringUntil('\n');
+  serverIP.trim(); // remove newline characters
+
+  Serial.print("Backend set to: ");
+  Serial.println(serverIP);
 }
 
 void loop() {
@@ -39,6 +43,7 @@ void loop() {
 
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
+    String serverUrl = "http://" + serverIP + ":" + String(serverPort) + "/data";
     http.begin(serverUrl);
     http.addHeader("Content-Type", "application/json");
 

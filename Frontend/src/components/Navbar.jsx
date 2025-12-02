@@ -38,18 +38,32 @@ const Navbar = ({ teamMembers, onSelect }) => {
               {member.name}
             </button>
           ))}
-          {/* EMG Live button removed from desktop navbar */}
+          {/* EMG Page Button */}
+          <button
+            className="team-nav-btn"
+            style={{ color: "#fff" }}
+            onClick={() => navigate("/emg-live")}
+          >
+            EMG Live
+          </button>
         </div>
       </nav>
 
       {/* Mobile Overlay → page navigation */}
-      <div className={`overlay-panel ${isOpen ? "show" : ""}`}>
-        <button className="close-btn" onClick={toggleMenu}>
+      <div
+        className={`overlay-panel ${isOpen ? "show" : ""}`}
+        style={{
+          backgroundColor: "rgba(0, 0, 0, 0.7)", // semi-transparent dark background
+          backdropFilter: "blur(5px)", // optional: frosted effect
+        }}
+      >
+        <button className="close-btn" onClick={toggleMenu}style={{ color: "#fff" }}>
           &times;
         </button>
         <div className="overlay-links">
           <button
             className="team-nav-btn"
+            style={{ color: "#fff" }}
             onClick={() => {
               navigate("/"); // Go to DesignPage
               setIsOpen(false);
@@ -59,6 +73,7 @@ const Navbar = ({ teamMembers, onSelect }) => {
           </button>
           <button
             className="team-nav-btn"
+            style={{ color: "#fff" }}
             onClick={() => {
               navigate("/team"); // Go to TeamPage
               setIsOpen(false);
@@ -66,9 +81,10 @@ const Navbar = ({ teamMembers, onSelect }) => {
           >
             Team
           </button>
-          {/* EMG Page Button only in hamburger menu */}
+          {/* EMG Page Button */}
           <button
             className="team-nav-btn"
+            style={{ color: "#fff" }}
             onClick={() => {
               navigate("/emg-live"); // Go to EMGPage
               setIsOpen(false);

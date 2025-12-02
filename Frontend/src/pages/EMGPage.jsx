@@ -5,11 +5,12 @@ import headingBackground from "../assets/background3.jpg";
 import "../styles/EMG.css";
 
 const EMGPage = () => {
-  // Automatically switch WebSocket URL between local testing and static preview
+  // Determine WebSocket URL
+  // Uses local backend in development, disables in production
   const wsUrl =
-    window.location.hostname === "localhost"
-      ? "ws://172.20.10.12:8000/ws" // Local backend
-      : null; // No backend on Netlify, use dummy data
+    process.env.NODE_ENV === "development"
+      ? `ws://${window.location.hostname}:8000/ws`
+      : null;
 
   return (
     <div className="emg-page">
@@ -24,7 +25,7 @@ const EMGPage = () => {
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
-          color: "#fff", // ensure text is visible
+          color: "#fff",
         }}
       >
         <h1>Live EMG Signal</h1>
