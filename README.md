@@ -85,7 +85,7 @@ Make sure you have the following installed:
 
 ---
 
-## ⚙️ Backend Setup (Planned)
+## ⚙️ Backend Setup
 
 The backend will be built using **Express.js**.
 To get started in the future:
@@ -95,31 +95,24 @@ To get started in the future:
    ```bash
    cd Backend
    ```
-
-2. Initialize a Node.js project:
-
-   ```bash
-   npm init -y
-   npm install express cors dotenv
-   ```
-
-3. Create a `server.js` file:
-
-   ```js
-   const express = require('express');
-   const app = express();
-   const PORT = process.env.PORT || 5000;
-
-   app.get('/', (req, res) => res.send('Backend running!'));
-
-   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-   ```
-
-4. Run the backend:
+2. Install Python dependencies:
 
    ```bash
-   node server.js
+   pip install -r requirements.txt
    ```
+3. Run the project:
+
+   ```bash
+   python -m uvicorn main:app --host 0.0.0.0 --port 8000
+   ```
+
+4. Endpoints
+
+   * POST /data – Receive EMG data from ESP32:
+      {
+      "voltage": 1.23
+      }
+   * WebSocket /ws – Stream the latest EMG voltage to connected clients at ~100Hz
 
 ---
 
