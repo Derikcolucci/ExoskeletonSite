@@ -84,6 +84,17 @@ const Navbar = ({ teamMembers, onSelect }) => {
           >
             EMG Live
           </button>
+          {/* Anatomical Chart Button */}
+          <button
+            className="team-nav-btn"
+            style={{ color: "#fff" }}
+            onClick={() => {
+              navigate("/anatomical-chart"); // Go to MuscleActivationPage
+              setIsOpen(false);
+            }}
+          >
+            Anatomical Chart
+          </button>
         </div>
       </div>
     </>

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import TeamPage from "./pages/TeamPage";
 import DesignPage from "./pages/DesignPage";
 import EMGPage from "./pages/EMGPage"; // EMGPage imports EMGChart internally
+import AnatomicalChart from "./pages/MuscleActivationPage";
 
 const App = () => {
   return (
@@ -16,6 +17,9 @@ const App = () => {
 
         {/* EMG Live page */}
         <Route path="/emg-live" element={<EMGPage />} />
+
+        {/* Anatomical Chart page */}
+        <Route path="/anatomical-chart" element={<AnatomicalChart />} />
 
         {/* Redirect any unknown routes to DesignPage */}
         <Route path="*" element={<Navigate to="/" />} />

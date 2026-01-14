@@ -1,0 +1,161 @@
+/* ==============================
+   Muscle Page Base
+============================== */
+.muscle-page {
+  color: #111;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: #f9f9f9;
+  font-family: "Inter", sans-serif;
+}
+
+/* ==============================
+   Header
+============================== */
+.muscle-header {
+  height: 35vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 0 1rem;
+}
+
+.muscle-header h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.muscle-header p {
+  font-size: 1.5rem;
+  max-width: 700px;
+  color: #ddd;
+}
+
+/* ==============================
+   Main Section
+============================== */
+.muscle-section {
+  display: flex;
+  gap: 2rem;
+  padding: 4rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 65vh;
+}
+
+/* ==============================
+   Left Panel (Sliders)
+============================== */
+.muscle-panel {
+  width: 40%;
+  min-width: 360px;
+  border-right: 2px solid #000;
+  padding-right: 2rem;
+  overflow-y: auto;
+}
+
+.muscle-group {
+  margin-bottom: 2.5rem;
+}
+
+.muscle-group h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111;
+  border-bottom: 2px solid #000;
+  padding-bottom: 0.4rem;
+  margin-bottom: 1.2rem;
+}
+
+.muscle-row {
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.muscle-label {
+  font-size: 0.95rem;
+  color: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.muscle-slider {
+  width: 100%;
+  accent-color: #000;
+  cursor: pointer;
+}
+
+/* ==============================
+   Right Panel (SVG)
+============================== */
+.muscle-svg-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.muscle-svg {
+  max-width: 90%;
+  max-height: 90%;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ==============================
+   Hover + Active States
+============================== */
+.muscle-row:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 6px;
+}
+
+.muscle-row.active {
+  background-color: rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
+}
+
+/* ==============================
+   Responsive
+============================== */
+@media (max-width: 1024px) {
+  .muscle-section {
+    flex-direction: column;
+  }
+
+  .muscle-panel {
+    width: 100%;
+    border-right: none;
+    border-bottom: 2px solid #000;
+    padding-bottom: 2rem;
+    margin-bottom: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .muscle-header h1 {
+    font-size: 2.5rem;
+  }
+
+  .muscle-header p {
+    font-size: 1.2rem;
+  }
+
+  .muscle-section {
+    padding: 3rem 1rem;
+  }
+
+  .muscle-row {
+    grid-template-columns: 1fr 140px;
+  }
+}
