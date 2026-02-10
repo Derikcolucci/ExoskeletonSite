@@ -1,0 +1,89 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>  // Needs to be installed: ArduinoJson library
+
+// ===== CONFIG =====
+const char* ssid = "";
+const char* password = "";
+const int readInterval = 10;   // ~100 Hz
+const int serverPort = 8000;
+
+String serverIP;
+
+// ===== EMG PINS =====
+const int emgPins[] = {34, 35};
+const char* muscleNames[] = {"Right_Bicep_Femoris", "Left_Bicep_Femoris"};
+const int NUM_SENSORS = 2;
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  Serial.println("\n=== ESP32 MULTI-EMG DEBUG START ===");
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
+  Serial.print("Connecting to WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("\nWiFi connected!");
+  Serial.print("ESP32 IP Address: ");
+  Serial.println(WiFi.localIP());
+
+  Serial.println("\nEnter backend PC IP:");
+  while (Serial.available() == 0) delay(100);
+  serverIP = Serial.readStringUntil('\n');
+  serverIP.trim();
+
+  Serial.print("Backend set to: ");
+  Serial.println(serverIP);
+}
+
+void loop() {
+  if (WiFi.status() == WL_CONNECTED) {
+    // Create JSON object
+    StaticJsonDocument<200> doc;
+
+    Serial.println("\n--- EMG FRAME ---");
+
+    for (int i = 0; i < NUM_SENSORS; i++) {
+      int raw = analogRead(emgPins[i]);
+      float voltage = (raw / 4095.0) * 3.3;
+
+      // Add to JSON
+      doc[muscleNames[i]] = voltage;
+
+      // Serial print
+      Serial.print(muscleNames[i]);
+      Serial.print(": ");
+      Serial.print(voltage, 3);
+      Serial.println(" V");
+    }
+
+    // Serialize JSON to string
+    String payload;
+    serializeJson(doc, payload);
+
+    // Send POST
+    HTTPClient http;
+    String url = "http://" + serverIP + ":" + String(serverPort) + "/data";
+    http.begin(url);
+    http.addHeader("Content-Type", "application/json");
+
+    int responseCode = http.POST(payload);
+    Serial.print("POST Response Code: ");
+    Serial.println(responseCode);
+
+    http.end();
+  } else {
+    Serial.println("WiFi disconnected. Reconnecting...");
+    WiFi.disconnect();
+    WiFi.begin(ssid, password);
+  }
+
+  delay(readInterval);
+}
