@@ -36,6 +36,7 @@ logs/
 
 Backend/node_modules/
 Backend/.env
+Backend/__pycache__/
 
 # Frontend
 
