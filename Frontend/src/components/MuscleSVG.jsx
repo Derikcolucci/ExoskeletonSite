@@ -6,18 +6,16 @@ export default function MuscleSVG({ activation }) {
 
   useEffect(() => {
     if (!wrapperRef.current) return;
-
     const svgElement = wrapperRef.current.querySelector("svg");
     if (!svgElement) return;
 
-    // Loop over all muscles in activation
     Object.entries(activation).forEach(([muscleId, value]) => {
       const muscleGroup = svgElement.querySelector(`#${muscleId}`);
       if (muscleGroup) {
-        // Color all paths inside the group and override existing fill-opacity
+        const normalized = Math.min(Math.max((value / 3.3), 0), 1);
         muscleGroup.querySelectorAll("path").forEach((path) => {
-          path.style.fill = `rgba(255,0,0,${value / 100})`;
-          path.style.fillOpacity = value / 100;
+          path.style.fill = `rgba(255,0,0,${normalized})`;
+          path.style.fillOpacity = normalized;
         });
       }
     });

@@ -3,7 +3,7 @@ import React from "react";
 const ModelViewer = () => {
   return (
     <model-viewer
-      src="/exoskeleton.glb"   // path to your model in public folder
+      src="/Exo_Current.glb"   // path to your model in public folder
       alt="Exoskeleton Model"
       camera-controls
       auto-rotate
