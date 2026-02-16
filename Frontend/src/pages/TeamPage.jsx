@@ -3,7 +3,7 @@ import { teamMembers } from "../data/teamMembers";
 import Navbar from "../components/Navbar";
 import TeamMemberSection from "../components/TeamMemberSection";
 import "../styles/team.css";
-import background from "../assets/background3.jpg"; // Page background
+import background from "../assets/FAU_Background.jpeg"; // Page background
 
 const TeamPage = () => {
   const sectionRefs = useRef([]);

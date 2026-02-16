@@ -1,6 +1,6 @@
 const missionStatement = {
   title: "Our Mission",
-  text: "We design innovative devices that merge usability with cutting-edge technology. Our goal is to create products that make life simpler and smarter."
+  text: "Rebuilding strength and restoring independence through advanced lower limb exoskeleton technology."
 };
 
 export default missionStatement;

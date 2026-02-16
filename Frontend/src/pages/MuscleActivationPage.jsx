@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import MuscleSVG from "../components/MuscleSVG";
 import { muscleGroups, allMuscles } from "../data/muscleConfig";
-import headingBackground from "../assets/background3.jpg";
+import headingBackground from "../assets/FAU_Background.jpeg";
 
 export default function MuscleActivationPage() {
   const [activation, setActivation] = useState(
@@ -34,12 +34,11 @@ export default function MuscleActivationPage() {
         style={{
           backgroundImage: `url(${headingBackground})`,
           backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundPosition: "center 40%",
           color: "#fff",
         }}
       >
-        <h1>Muscle Activation Map</h1>
-        <p>Control and visualize individual muscle activation in real-time.</p>
+        <h1>Visualize Muscle Activation</h1>
       </header>
 
       <section

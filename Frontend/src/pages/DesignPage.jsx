@@ -3,7 +3,7 @@ import Navbar from "../components/Navbar";
 import CurrentDesignSection from "../components/CurrentDesignSection";
 import TechStackSection from "../components/TechStackSection";
 import ModelViewer from "../components/ModelViewer";
-import missionBackground from "../assets/background3.jpg";
+import missionBackground from "../assets/FAU_Background.jpeg";
 import background1 from "../assets/background4.jpg";
 import missionStatement from "../data/missionStatement";
 
@@ -35,9 +35,15 @@ const DesignPage = () => {
           backgroundSize: "cover",
           backgroundPosition: `center ${offsetY * 0.3}px`,
           backgroundRepeat: "no-repeat",
+          display: "grid",
+          justifyItems: "center",   // horizontal center
+          alignContent: "start",
+          textAlign: "center",
+          paddingTop: "10px",
+          minHeight: "500px",
         }}
       >
-        <div>
+        <div style={{ width: "100%", maxWidth: "800px" }}>
           <h1>{missionStatement.title}</h1>
           <p>{missionStatement.text}</p>
         </div>

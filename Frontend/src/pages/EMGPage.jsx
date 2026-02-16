@@ -1,7 +1,7 @@
 import React from "react";
 import Navbar from "../components/Navbar";
 import EMGChart from "../components/EMGChart"; // Make sure this is in src/components/
-import headingBackground from "../assets/background3.jpg";
+import headingBackground from "../assets/FAU_Background.jpeg";
 import "../styles/EMG.css";
 
 const EMGPage = () => {
@@ -23,7 +23,7 @@ const EMGPage = () => {
         style={{
           backgroundImage: `url(${headingBackground})`,
           backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundPosition: "center 40%",
           backgroundRepeat: "no-repeat",
           color: "#fff",
         }}
