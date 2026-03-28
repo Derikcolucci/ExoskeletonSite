@@ -1,0 +1,172 @@
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_ADS1X15.h>
+#include <Wire.h>
+
+// I2C Bus 1: IMUs (Logic Level Shifted or Direct)
+#define I2C_SDA_IMU 17
+#define I2C_SCL_IMU 16
+TwoWire I2C_IMU = TwoWire(0);
+
+// I2C Bus 2: ADS1115 (Pins 21 & 22)
+#define I2C_SDA_ADS 21
+#define I2C_SCL_ADS 22
+TwoWire I2C_ADS = TwoWire(1);
+
+#define LED_BUILTIN 2
+
+// Sensor Objects
+Adafruit_MPU6050 mpuThigh;
+Adafruit_MPU6050 mpuShank;
+Adafruit_ADS1115 ads; // ADS1115 for 4 EMG channels
+
+// EMG Filtering & Signal States
+const int bufferSize = 50;      
+const float noiseFloor = 10.0;  
+const float lpfAlpha = 0.15;    
+float vHigh[4] = {0}, vLow[4] = {0};
+float smoothVal[4] = {0};
+int emgBuffer[4][bufferSize];
+int bIndex[4] = {0};
+float mvcScale[4] = {500, 500, 500, 500};
+
+// IMU Variables
+float thighAngle = 0, shankAngle = 0;
+unsigned long lastTime = 0;
+bool sysActive = false;
+
+// --- EMG Processing Function (Now reads from ADS1115) ---
+float getProcessedRMS(int sIdx) {
+  // Read from ADS1115 Channel (0, 1, 2, or 3)
+  // ads.readADC_SingleEnded returns a 16-bit value
+  float rawIn = (float)ads.readADC_SingleEnded(sIdx);
+  
+  vHigh[sIdx] = vHigh[sIdx] * 0.95 + rawIn * 0.05;
+  float hp = rawIn - vHigh[sIdx];
+  vLow[sIdx] = vLow[sIdx] * 0.7 + hp * 0.3;
+
+  emgBuffer[sIdx][bIndex[sIdx]] = (int)vLow[sIdx];
+  bIndex[sIdx] = (bIndex[sIdx] + 1) % bufferSize;
+  
+  long sqSum = 0;
+  for (int i = 0; i < bufferSize; i++) {
+    sqSum += (long)emgBuffer[sIdx][i] * (long)emgBuffer[sIdx][i];
+  }
+  return sqrt(sqSum / (float)bufferSize);
+}
+
+// --- Calibration Routine ---
+void runCalibration() {
+  digitalWrite(LED_BUILTIN, HIGH);
+  for(int i=0; i<4; i++) mvcScale[i] = 0.0;
+
+  Serial.println("\n--- STARTING EMG CALIBRATION ---");
+  Serial.println("Relax all muscles for 3 seconds...");
+  delay(3000);
+
+  // Calibration Phase 1: Thighs (Quads) - ADS Channels 0 & 1
+  Serial.println("\nSTEP 1: Flex your THIGH (Quads) as hard as possible!");
+  delay(2000); Serial.println("FLEX NOW!");
+  unsigned long tStart = millis();
+  while (millis() - tStart < 4000) {
+    for (int i = 0; i < 2; i++) {
+      float val = getProcessedRMS(i);
+      if (val > mvcScale[i]) mvcScale[i] = val;
+    }
+  }
+  Serial.println("Relax.");
+  delay(2000);
+
+  // Calibration Phase 2: Hamstrings - ADS Channels 2 & 3
+  Serial.println("\nSTEP 2: Flex your HAMSTRINGS as hard as possible!");
+  delay(2000); Serial.println("FLEX NOW!");
+  tStart = millis();
+  while (millis() - tStart < 4000) {
+    for (int i = 2; i < 4; i++) {
+      float val = getProcessedRMS(i);
+      if (val > mvcScale[i]) mvcScale[i] = val;
+    }
+  }
+  
+  for (int i = 0; i < 4; i++) {
+    if (mvcScale[i] < 50.0) mvcScale[i] = 1000.0; // Adjusted for ADS1115 resolution
+  }
+  
+  digitalWrite(LED_BUILTIN, LOW);
+  Serial.println("--- CALIBRATION COMPLETE ---");
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED_BUILTIN, OUTPUT);
+
+  // Initialize Bus 1: IMUs
+  I2C_IMU.begin(I2C_SDA_IMU, I2C_SCL_IMU, 400000);
+  if (!mpuThigh.begin(0x68, &I2C_IMU)) {
+    Serial.println("Thigh MPU Fail!");
+    while (1) yield();
+  }
+  if (!mpuShank.begin(0x69, &I2C_IMU)) {
+    Serial.println("Shank MPU Fail!");
+    while (1) yield();
+  }
+
+  // Initialize Bus 2: ADS1115
+  I2C_ADS.begin(I2C_SDA_ADS, I2C_SCL_ADS, 400000);
+  if (!ads.begin(0x48, &I2C_ADS)) { // Default ADS address is 0x48
+    Serial.println("ADS1115 Fail!");
+    while (1) yield();
+  }
+  
+  // Set ADS1115 Gain (GAIN_ONE = +/- 4.096V)
+  ads.setGain(GAIN_ONE);
+
+  Serial.println("System Standby. Send 's' to start...");
+  while (!sysActive) {
+    if (Serial.available() > 0 && Serial.read() == 's') sysActive = true;
+  }
+  
+  runCalibration();
+  lastTime = millis();
+}
+
+void loop() {
+  unsigned long timestamp = millis();
+  float dt = (timestamp - lastTime) / 1000.0;
+  lastTime = timestamp;
+
+  // 1. Process IMU Data
+  sensors_event_t aT, gT, tempT, aS, gS, tempS;
+  mpuThigh.getEvent(&aT, &gT, &tempT);
+  mpuShank.getEvent(&aS, &gS, &tempS);
+
+  float accelAngleT = atan2(aT.acceleration.y, aT.acceleration.z) * 180 / PI;
+  thighAngle = 0.96 * (thighAngle + gT.gyro.x * dt * (180/PI)) + 0.04 * accelAngleT;
+
+  float accelAngleS = atan2(aS.acceleration.y, aS.acceleration.z) * 180 / PI;
+  shankAngle = 0.96 * (shankAngle + gS.gyro.x * dt * (180/PI)) + 0.04 * accelAngleS;
+
+  float kneeAngle = thighAngle - shankAngle;
+
+  // 2. Process ADS1115 EMG Signals
+  for (int i = 0; i < 4; i++) {
+    float rms = getProcessedRMS(i);
+    float pct = (rms / mvcScale[i]) * 100.0;
+    if (pct < noiseFloor) pct = 0;
+    pct = constrain(pct, 0.0, 100.0);
+    smoothVal[i] = (lpfAlpha * pct) + ((1.0 - lpfAlpha) * smoothVal[i]);
+  }
+
+  // 3. Output to Serial Plotter
+  static unsigned long plotLast = 0;
+  if (millis() - plotLast > 30) {
+    plotLast = millis();
+    
+    float thighEffort = (smoothVal[0] + smoothVal[1]) / 2.0;
+    float hamEffort   = (smoothVal[2] + smoothVal[3]) / 2.0;
+
+    Serial.print("Knee_Angle:");    Serial.print(kneeAngle);
+    Serial.print(",Thigh_Effort:"); Serial.print(thighEffort);
+    Serial.print(",Ham_Effort:");   Serial.println(hamEffort);
+  }
+}

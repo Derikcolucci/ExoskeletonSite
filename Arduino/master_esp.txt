@@ -1,0 +1,104 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include <esp_now.h>
+#include <vector>  // Use vector instead of queue
+
+// ===== CONFIG =====
+const char* ssid = "";
+const char* password = "";
+const char* serverURL = "";  // Flask endpoint
+
+// ===== DATA STRUCTURE =====
+typedef struct struct_message {
+    int legID;
+    float kneeAngle;
+    float emg1;
+    float emg2;
+    float emg3;
+    float emg4;
+} struct_message;
+
+// Use a vector to store incoming messages
+std::vector<struct_message> dataQueue;
+
+// ===== ESP-NOW CALLBACK =====
+void OnDataRecv(const esp_now_recv_info *info, const uint8_t *data, int len) {
+    if (len != sizeof(struct_message)) return;
+    struct_message incoming;
+    memcpy(&incoming, data, sizeof(struct_message));
+    dataQueue.push_back(incoming);  // Add to vector
+}
+
+// ===== SETUP =====
+void setup() {
+    Serial.begin(115200);
+    delay(1000);
+
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, password);
+
+    Serial.print("Connecting WiFi");
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println("\nConnected! IP: " + WiFi.localIP().toString());
+
+    if (esp_now_init() != ESP_OK) {
+        Serial.println("ESP-NOW init failed");
+        return;
+    }
+    esp_now_register_recv_cb(OnDataRecv);
+
+    Serial.println("Master Ready");
+}
+
+// ===== LOOP =====
+void loop() {
+
+    // Process all messages in the vector
+    while (!dataQueue.empty() && WiFi.status() == WL_CONNECTED) {
+        struct_message msg = dataQueue.front();
+        dataQueue.erase(dataQueue.begin());  // Remove first element (like queue)
+
+        // Build JSON using ArduinoJson
+        StaticJsonDocument<256> doc;
+        doc["timestamp"] = millis() / 1000.0;
+
+        // Raw EMG
+        JsonArray emg = doc.createNestedArray("emg");
+        emg.add(msg.emg1); emg.add(msg.emg2); emg.add(msg.emg3); emg.add(msg.emg4);
+
+        // Absolute EMG
+        JsonArray emg_abs = doc.createNestedArray("emg_abs");
+        emg_abs.add(fabs(msg.emg1)); emg_abs.add(fabs(msg.emg2));
+        emg_abs.add(fabs(msg.emg3)); emg_abs.add(fabs(msg.emg4));
+
+        // Encoders
+        JsonObject enc = doc.createNestedObject("encoders");
+        if (msg.legID == 1) {
+            enc["left_knee"] = msg.kneeAngle;
+            enc["right_knee"] = 0;
+        } else {
+            enc["left_knee"] = 0;
+            enc["right_knee"] = msg.kneeAngle;
+        }
+
+        // Serialize JSON
+        String payload;
+        serializeJson(doc, payload);
+
+        // POST to server
+        HTTPClient http;
+        http.begin(serverURL);
+        http.addHeader("Content-Type", "application/json");
+        int code = http.POST(payload);
+        Serial.print("POST Response Code: "); Serial.println(code);
+        http.end();
+
+        Serial.println("Sent payload: " + payload);
+    }
+
+    delay(5); // small delay to avoid flooding
+}
