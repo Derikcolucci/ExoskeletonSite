@@ -1,6 +1,3 @@
-/*
-Will be the final format
-
 export const muscleGroups = {
   Hamstrings: [
     "Left_Semitendinosus",
@@ -18,8 +15,8 @@ export const muscleGroups = {
 
 // Flattened array for initial state
 export const allMuscles = Object.values(muscleGroups).flat();
-*/
 
+/*
 // Current format for testing
 export const muscleGroups = {
   Hamstrings: [
@@ -30,3 +27,4 @@ export const muscleGroups = {
 
 // Flattened array for initial state
 export const allMuscles = Object.values(muscleGroups).flat();
+*/
