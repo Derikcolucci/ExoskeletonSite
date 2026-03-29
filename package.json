@@ -1,15 +1,5 @@
 {
-  "name": "frontend",
-  "version": "1.0.0",
-  "private": true,
-  "dependencies": {
-    "three": "^0.182.0",
-    "@google/model-viewer": "^4.2.0"
-  },
   "devDependencies": {
     "@svgr/webpack": "^8.1.0"
-  },
-  "scripts": {
-    "build": "react-scripts build" 
   }
 }
