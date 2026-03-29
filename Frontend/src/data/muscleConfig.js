@@ -1,3 +1,4 @@
+// Grouped muscles for display
 export const muscleGroups = {
   Hamstrings: [
     "Left_Semitendinosus",
@@ -16,15 +17,5 @@ export const muscleGroups = {
 // Flattened array for initial state
 export const allMuscles = Object.values(muscleGroups).flat();
 
-/*
-// Current format for testing
-export const muscleGroups = {
-  Hamstrings: [
-    "Right_Bicep_Femoris",
-    "Left_Bicep_Femoris",
-  ],
-};
-
-// Flattened array for initial state
-export const allMuscles = Object.values(muscleGroups).flat();
-*/
+// Optional: include knee angles as constants (for React display only)
+export const kneeAngles = ["left_knee_angle", "right_knee_angle"];

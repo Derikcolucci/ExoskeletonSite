@@ -3,11 +3,13 @@ import React from "react";
 const ModelViewer = () => {
   return (
     <model-viewer
-      src="/Exo_Current.glb"   // path to your model in public folder
+      src="/exo_v2.glb"
       alt="Exoskeleton Model"
       camera-controls
       auto-rotate
       disable-zoom
+      // Slightly increase the size
+      scale="2 2 2"
       style={{ width: "100%", height: "500px" }}
     ></model-viewer>
   );
