@@ -14,8 +14,14 @@ export default function MuscleActivationPage() {
   });
 
   useEffect(() => {
-    //const ws = new WebSocket("ws://172.20.10.12:5000/ws"); // your backend IP 
-    const ws = new WebSocket("ws://192.168.1.83:5000/ws");
+    // Use local WebSocket in development, public one in production
+    const wsUrl =
+      process.env.NODE_ENV === "development"
+        ? "ws://:5000/ws" // your local IP
+        : "wss://YOUR_PUBLIC_WS_SERVER/ws"; // reachable from Netlify
+
+    const ws = new WebSocket(wsUrl);
+
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
 
@@ -86,10 +92,22 @@ export default function MuscleActivationPage() {
         >
           {/* Knee angles display */}
           <div style={{ marginBottom: "2rem" }}>
-            <h3 style={{ borderBottom: "2px solid #000", paddingBottom: "0.4rem", marginBottom: "1rem" }}>
+            <h3
+              style={{
+                borderBottom: "2px solid #000",
+                paddingBottom: "0.4rem",
+                marginBottom: "1rem",
+              }}
+            >
               Knee Angles
             </h3>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.8rem" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "0.8rem",
+              }}
+            >
               <span>Left Knee</span>
               <span>{Math.round(kneeAngles.left_knee_angle)}°</span>
             </div>
@@ -101,19 +119,36 @@ export default function MuscleActivationPage() {
 
           {Object.entries(muscleGroups).map(([group, muscles]) => (
             <div key={group} style={{ marginBottom: "2rem" }}>
-              <h3 style={{ borderBottom: "2px solid #000", paddingBottom: "0.4rem", marginBottom: "1rem" }}>
+              <h3
+                style={{
+                  borderBottom: "2px solid #000",
+                  paddingBottom: "0.4rem",
+                  marginBottom: "1rem",
+                }}
+              >
                 {group}
               </h3>
               {muscles.map((id) => (
                 <div
                   key={id}
-                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.8rem" }}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "0.8rem",
+                  }}
                 >
                   <span style={{ fontSize: "0.95rem", color: "#111" }}>
                     {id.replaceAll("_", " ")}
                   </span>
-                  <span style={{ minWidth: "40px", textAlign: "right", marginRight: "0.5rem" }}>
-                    {Math.round((activation[id] / 3.3) * 100)}% {/* Convert voltage to 0-100% */}
+                  <span
+                    style={{
+                      minWidth: "40px",
+                      textAlign: "right",
+                      marginRight: "0.5rem",
+                    }}
+                  >
+                    {Math.round((activation[id] / 3.3) * 100)}%
                   </span>
                 </div>
               ))}
@@ -121,7 +156,16 @@ export default function MuscleActivationPage() {
           ))}
         </div>
 
-        <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "flex-start", minWidth: "300px", maxHeight: "600px" }}>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "flex-start",
+            minWidth: "300px",
+            maxHeight: "600px",
+          }}
+        >
           <MuscleSVG activation={activation} />
         </div>
       </section>
