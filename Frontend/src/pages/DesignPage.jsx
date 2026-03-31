@@ -9,14 +9,12 @@ import missionStatement from "../data/missionStatement";
 
 const DesignPage = () => {
   const [showTopBtn, setShowTopBtn] = useState(false);
-  const [offsetY, setOffsetY] = useState(0);
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   useEffect(() => {
     const handleScroll = () => {
       setShowTopBtn(window.scrollY > 300);
-      setOffsetY(window.scrollY);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -33,10 +31,10 @@ const DesignPage = () => {
         style={{
           backgroundImage: `url(${missionBackground})`,
           backgroundSize: "cover",
-          backgroundPosition: `center ${offsetY * 0.3}px`,
+          backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           display: "grid",
-          justifyItems: "center",   // horizontal center
+          justifyItems: "center",
           alignContent: "start",
           textAlign: "center",
           paddingTop: "10px",
@@ -59,12 +57,12 @@ const DesignPage = () => {
         </div>
       </section>
 
-      {/* Tech Stack Section with parallax */}
+      {/* Tech Stack Section (parallax removed add back if wanted) */}
       <section
         className="tech-stack-section"
         style={{
           backgroundImage: `url(${background1})`,
-          backgroundPosition: `center ${offsetY * 0.05}px`, // parallax effect
+          backgroundPosition: "center",
         }}
       >
         <TechStackSection />
