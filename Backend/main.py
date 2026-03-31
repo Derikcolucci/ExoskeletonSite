@@ -1,12 +1,12 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
+from typing import List, Dict, Optional
 import asyncio
 
 app = FastAPI()
 
-# Allow all origins (for testing only)
+# Allow all origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,30 +15,62 @@ app.add_middleware(
 )
 
 # ===== EMG DATA MODEL =====
-class EMGData(BaseModel):
-    Right_Bicep_Femoris: float
-    Left_Bicep_Femoris: float
+class EMGPacket(BaseModel):
+    timestamp: Optional[float]
+    emg: List[float]           # EMG values from ESP32
+    encoders: Dict[str, float] # "left_knee" and "right_knee"
 
-# Store last 500 readings
-live_data: List[EMGData] = []
+# ===== LIVE DATA =====
+live_data: List[Dict] = []
 
-# ===== POST ENDPOINT =====
-@app.post("/data")
-async def receive_data(data: EMGData):
+# Muscles we track
+MUSCLES = [
+    "Left_Semitendinosus",
+    "Right_Semitendinosus",
+    "Left_Bicep_Femoris",
+    "Right_Bicep_Femoris",
+    "Left_Rectus_Femoris",
+    "Right_Rectus_Femoris",
+    "Left_Vastus_Lateralis",
+    "Right_Vastus_Lateralis",
+]
+
+# ===== HELPERS =====
+def map_emg(packet: EMGPacket) -> Dict:
     """
-    Receive EMG data from ESP32 POST.
+    Map raw EMG array to named muscles. 
+    Assumes packet.emg = [LS, RS, LB, RB, LR, RR, LVL, RVL] if all channels sent.
+    If only left leg sent, fill left muscles, leave right as 0.
     """
-    live_data.append(data)
+    row = {"timestamp": packet.timestamp or 0.0}
+    # Initialize all muscles to 0
+    for m in MUSCLES:
+        row[m] = 0.0
+
+    # Map incoming emg to muscles by length
+    for i, val in enumerate(packet.emg):
+        if i < len(MUSCLES):
+            row[MUSCLES[i]] = val
+
+    # Map encoder angles
+    row["left_knee_angle"] = packet.encoders.get("left_knee", 0.0)
+    row["right_knee_angle"] = packet.encoders.get("right_knee", 0.0)
+
+    return row
+
+# ===== ENDPOINTS =====
+@app.post("/stream_data")
+async def receive_stream(packet: EMGPacket):
+    print("RAW DATA:", packet.model_dump())
+    row = map_emg(packet)
+    live_data.append(row)
     if len(live_data) > 500:
         live_data.pop(0)
-
-    # Simple debug print
-    print("Received EMG Data:")
-    for muscle, voltage in data.model_dump().items():  # <-- updated
-        print(f"  {muscle}: {voltage:.3f} V")
+    print("Parsed Data:")
+    for k, v in row.items():
+        print(f"  {k}: {v:.3f}")
     return {"status": "received"}
 
-# ===== WEBSOCKET (optional, real-time frontend) =====
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -46,8 +78,7 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             if live_data:
-                # Send latest reading as JSON
-                await websocket.send_json(live_data[-1].model_dump())  # <-- updated
+                await websocket.send_json(live_data[-1])
             await asyncio.sleep(0.01)  # ~100 Hz
     except WebSocketDisconnect:
         print("WebSocket client disconnected")

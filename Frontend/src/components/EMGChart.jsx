@@ -2,22 +2,21 @@ import React, { useEffect, useRef, useState } from "react";
 import Chart from "chart.js/auto";
 import "../styles/EMG.css";
 
-const EMGChart = ({ wsUrl }) => {
+const EMGChart = ({ wsUrl, selectedMuscle }) => {
   const chartRef = useRef(null);
   const [chartInstance, setChartInstance] = useState(null);
 
-  // Initialize chart (same as before)
   useEffect(() => {
     const ctx = chartRef.current.getContext("2d");
 
     const newChart = new Chart(ctx, {
       type: "line",
       data: {
-        labels: [], // starts empty
+        labels: [],
         datasets: [
           {
-            label: "EMG Voltage (V)",
-            data: [], // starts empty
+            label: selectedMuscle.replaceAll("_", " "),
+            data: [],
             borderColor: "rgb(75, 192, 192)",
             tension: 0.2,
             fill: false,
@@ -29,7 +28,16 @@ const EMGChart = ({ wsUrl }) => {
         responsive: true,
         scales: {
           x: { display: false },
-          y: { beginAtZero: true, suggestedMax: 3.5 },
+          y: { beginAtZero: true, max: 100 }, // 0-100% scale
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                return `${context.raw.toFixed(1)}%`;
+              },
+            },
+          },
         },
       },
     });
@@ -39,11 +47,11 @@ const EMGChart = ({ wsUrl }) => {
     return () => {
       newChart.destroy();
     };
-  }, []);
+  }, [selectedMuscle]); // re-create chart when muscle changes
 
-  // Handle WebSocket data (only if wsUrl exists)
+  // WebSocket data
   useEffect(() => {
-    if (!chartInstance || !wsUrl) return; // Skip WebSocket in production
+    if (!chartInstance || !wsUrl) return;
 
     const ws = new WebSocket(wsUrl);
 
@@ -53,15 +61,18 @@ const EMGChart = ({ wsUrl }) => {
 
     ws.onmessage = (event) => {
       try {
-        const voltage = JSON.parse(event.data).voltage;
+        const incoming = JSON.parse(event.data);
+
+        const value = incoming[selectedMuscle] !== undefined
+          ? incoming[selectedMuscle] * 100 // convert 0-1 to %
+          : 0;
+
         const data = chartInstance.data;
 
-        // Add timestamp label
         data.labels.push(new Date().toLocaleTimeString());
-        data.datasets[0].data.push(voltage);
+        data.datasets[0].data.push(value);
 
-        // Keep only last 500 points
-        if (data.labels.length > 500) {
+        if (data.labels.length > 200) {
           data.labels.shift();
           data.datasets[0].data.shift();
         }
@@ -73,7 +84,7 @@ const EMGChart = ({ wsUrl }) => {
     };
 
     return () => ws.close();
-  }, [chartInstance, wsUrl]);
+  }, [chartInstance, wsUrl, selectedMuscle]);
 
   return <canvas ref={chartRef} className="emg-chart-canvas"></canvas>;
 };

@@ -45,7 +45,7 @@ export default function MuscleSVG({ activation, kneeAngles = {} }) {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        position: "relative", // needed for overlay
+        position: "relative", // keep for optional SVG text
       }}
     >
       <MusclesSVG
@@ -57,23 +57,6 @@ export default function MuscleSVG({ activation, kneeAngles = {} }) {
           objectFit: "contain",
         }}
       />
-
-      {/* 🟢 FALLBACK: Overlay knee angles (if SVG has no text IDs) */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: "10px",
-          left: "10px",
-          background: "rgba(0,0,0,0.6)",
-          color: "#fff",
-          padding: "8px 12px",
-          borderRadius: "6px",
-          fontSize: "0.9rem",
-        }}
-      >
-        <div>Left Knee: {kneeAngles.left?.toFixed(1) ?? 0}°</div>
-        <div>Right Knee: {kneeAngles.right?.toFixed(1) ?? 0}°</div>
-      </div>
     </div>
   );
 }

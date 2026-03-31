@@ -8,14 +8,36 @@ export default function MuscleActivationPage() {
   const [activation, setActivation] = useState(
     Object.fromEntries(allMuscles.map((id) => [id, 0]))
   );
+  const [kneeAngles, setKneeAngles] = useState({
+    left_knee_angle: 0,
+    right_knee_angle: 0,
+  });
 
   useEffect(() => {
-    const ws = new WebSocket("ws://172.20.10.12:8000/ws"); // your backend IP
+    //const ws = new WebSocket("ws://172.20.10.12:5000/ws"); // your backend IP 
+    const ws = new WebSocket("ws://192.168.1.83:5000/ws");
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
+
+      // Separate EMG channels from knee angles
+      const newActivation = {};
+      let newKneeAngles = {};
+      Object.entries(data).forEach(([key, value]) => {
+        if (key === "left_knee_angle" || key === "right_knee_angle") {
+          newKneeAngles[key] = value;
+        } else {
+          newActivation[key] = value;
+        }
+      });
+
       setActivation((prev) => ({
         ...prev,
-        ...data, // overwrite only the muscles sent
+        ...newActivation,
+      }));
+
+      setKneeAngles((prev) => ({
+        ...prev,
+        ...newKneeAngles,
       }));
     };
 
@@ -62,6 +84,21 @@ export default function MuscleActivationPage() {
             gap: "1.5rem",
           }}
         >
+          {/* Knee angles display */}
+          <div style={{ marginBottom: "2rem" }}>
+            <h3 style={{ borderBottom: "2px solid #000", paddingBottom: "0.4rem", marginBottom: "1rem" }}>
+              Knee Angles
+            </h3>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.8rem" }}>
+              <span>Left Knee</span>
+              <span>{Math.round(kneeAngles.left_knee_angle)}°</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>Right Knee</span>
+              <span>{Math.round(kneeAngles.right_knee_angle)}°</span>
+            </div>
+          </div>
+
           {Object.entries(muscleGroups).map(([group, muscles]) => (
             <div key={group} style={{ marginBottom: "2rem" }}>
               <h3 style={{ borderBottom: "2px solid #000", paddingBottom: "0.4rem", marginBottom: "1rem" }}>
@@ -76,7 +113,7 @@ export default function MuscleActivationPage() {
                     {id.replaceAll("_", " ")}
                   </span>
                   <span style={{ minWidth: "40px", textAlign: "right", marginRight: "0.5rem" }}>
-                    {Math.round((activation[id] / 3.3) * 100)} {/* Convert voltage to 0-100% */}
+                    {Math.round((activation[id] / 3.3) * 100)}% {/* Convert voltage to 0-100% */}
                   </span>
                 </div>
               ))}
