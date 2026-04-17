@@ -19,19 +19,8 @@ const devices = [
     image: esp32Img,
   },
   {
-    id: 2,
-    name: "AS5600 Magnetic Rotary Encoder",
-    description: [
-      "Tracks lower limb orientation and joint rotation",
-      "Measures movement patterns to determine muscle activation",
-      "Detects potential issues or weaknesses in specific muscles",
-      "Provides input for machine learning diagnostics",
-    ],
-    image: as5600Img,
-  },
-  {
     id: 3,
-    name: "MayoWare 2.0 EMG Sensor",
+    name: "EMG Sensor",
     description: [
       "Captures muscle electrical activity (voltage readings)",
       "Works in conjunction with AS5600 to analyze movement",
