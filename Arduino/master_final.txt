@@ -1,0 +1,99 @@
+#include <esp_now.h>
+#include <WiFi.h>
+#include <ArduinoJson.h>
+
+// ===== STRUCT =====
+typedef struct struct_message {
+    int legID;
+    float kneeAngle;
+    float shankAngle;
+    float emg1;
+    float emg2;
+    float emg3;
+    float emg4;
+} struct_message;
+
+// ===== STORAGE (ALIGNED) =====
+struct_message leftLeg;
+struct_message rightLeg;
+
+bool leftReady = false;
+bool rightReady = false;
+
+// ===== TIMING =====
+unsigned long lastSend = 0;
+const unsigned long sendInterval = 100; // 10 Hz
+
+// ===== ESP-NOW CALLBACK =====
+void OnDataRecv(const esp_now_recv_info *info, const uint8_t *data, int len) {
+    if (len != sizeof(struct_message)) return;
+
+    struct_message incoming;
+    memcpy(&incoming, data, sizeof(struct_message));
+
+    if (incoming.legID == 1) {
+        rightLeg = incoming;
+        rightReady = true;
+    }
+    else if (incoming.legID == 2) {
+        leftLeg = incoming;
+        leftReady = true;
+    }
+}
+
+// ===== SETUP =====
+void setup() {
+    Serial.begin(115200);
+    delay(1000);
+
+    WiFi.mode(WIFI_STA);
+
+    if (esp_now_init() != ESP_OK) {
+        Serial.println("ESP-NOW init failed");
+        while (true) delay(1000);
+    }
+
+    esp_now_register_recv_cb(OnDataRecv);
+
+    Serial.println("Master ready (LEFT/RIGHT + shank tracking)");
+}
+
+// ===== LOOP =====
+void loop() {
+    unsigned long now = millis();
+
+    if (leftReady && rightReady && (now - lastSend >= sendInterval)) {
+        lastSend = now;
+
+        StaticJsonDocument<400> doc;
+        doc["timestamp"] = now / 1000.0;
+
+        // ===== KNEE + SHANK ENCODERS =====
+        JsonObject enc = doc.createNestedObject("encoders");
+
+        enc["left_knee"]   = leftLeg.kneeAngle;
+        enc["left_shank"]  = leftLeg.shankAngle;   // <-- ADDED
+
+        enc["right_knee"]  = rightLeg.kneeAngle;
+        enc["right_shank"] = rightLeg.shankAngle;  // <-- ADDED
+
+        // ===== EMG STREAM =====
+        JsonArray emg = doc.createNestedArray("emg");
+
+        // LEFT leg EMG
+        emg.add(leftLeg.emg1);
+        emg.add(leftLeg.emg2);
+        emg.add(leftLeg.emg3);
+        emg.add(leftLeg.emg4);
+
+        // RIGHT leg EMG
+        emg.add(rightLeg.emg1);
+        emg.add(rightLeg.emg2);
+        emg.add(rightLeg.emg3);
+        emg.add(rightLeg.emg4);
+
+        String out;
+        serializeJson(doc, out);
+        Serial.println(out);
+    }
+}

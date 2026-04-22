@@ -1,0 +1,20 @@
+#include <WiFi.h>
+
+void setup() {
+  Serial.begin(115200);
+  
+  // You must set the WiFi mode to station (STA) to read the MAC address
+  WiFi.mode(WIFI_STA);
+  
+  // Give it a moment to initialize
+  delay(100); 
+
+  Serial.println();
+  Serial.print("ESP32 Board MAC Address: ");
+  // This prints the address in the format: XX:XX:XX:XX:XX:XX
+  Serial.println(WiFi.macAddress()); 
+}
+
+void loop() {
+  // Nothing needed here
+}

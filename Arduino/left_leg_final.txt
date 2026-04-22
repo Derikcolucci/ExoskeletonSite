@@ -6,10 +6,11 @@
 #include <WiFi.h>
 
 // --- ESP-NOW WIRELESS SETUP ---
-uint8_t broadcastAddress[] = {0x80, 0xF3, 0xDA, 0x5D, 0x89, 0xFC}; // Master MAC
+uint8_t broadcastAddress[] = {0x##, 0x##, 0x##, 0x##, 0x##, 0x##};// Master MAC
 typedef struct struct_message {
     int legID;           
     float kneeAngle;
+    float shankAngle;
     float emg1;
     float emg2;
     float emg3;
@@ -29,6 +30,20 @@ TwoWire I2C_IMU = TwoWire(0);
 TwoWire I2C_ADS = TwoWire(1);
 
 #define LED_BUILTIN 2
+
+// --- JOINT SAFETY ---
+#define KNEE_MIN_ANGLE  65.0
+#define KNEE_MAX_ANGLE 185.0
+bool jointFault = false;
+
+// --- SENSOR SAFETY ---
+bool sensorFault = false;
+float lastThighAngle = 0;
+float lastShankAngle = 0;
+unsigned long sensorWatchdog = 0;
+
+// --- SYSTEM FAILSAFE ---
+bool systemFault = false;
 
 // Sensor Objects
 Adafruit_MPU6050 mpuThigh;
@@ -55,6 +70,14 @@ void OnDataRecv(const esp_now_recv_info *info, const uint8_t *data, int len) {
         runCalibration();
         lastTime = millis();
     }
+    
+    if (incomingByte == 'f') {
+        systemFault = false;
+        jointFault = false;
+        sensorFault = false;
+        digitalWrite(LED_BUILTIN, LOW);
+        Serial.println("FAILSAFE CLEARED");
+    }
 }
 
 // --- EMG Processing Function ---
@@ -77,7 +100,7 @@ void runCalibration() {
     digitalWrite(LED_BUILTIN, HIGH);
     for(int i=0; i<4; i++) mvcScale[i] = 0.0;
     Serial.println("\n--- STARTING EMG CALIBRATION ---");
-    delay(3000); // Relax phase
+    delay(3000);
 
     Serial.println("\nSTEP 1: Flex THIGH!");
     delay(2000);
@@ -106,17 +129,55 @@ void runCalibration() {
     Serial.println("--- CALIBRATION COMPLETE ---");
 }
 
+void checkJointSafety(float kneeAngle) {
+    if (kneeAngle < KNEE_MIN_ANGLE || kneeAngle > KNEE_MAX_ANGLE) {
+        jointFault = true;
+    }
+}
+
+void checkIMUSafety(float thigh, float shank) {
+    if (abs(thigh - lastThighAngle) < 0.01 &&
+        abs(shank - lastShankAngle) < 0.01) {
+        if (millis() - sensorWatchdog > 500) {
+            sensorFault = true;
+        }
+    } else {
+        sensorWatchdog = millis();
+    }
+
+    lastThighAngle = thigh;
+    lastShankAngle = shank;
+}
+
+void checkEMGSafety() {
+    for (int i = 0; i < 4; i++) {
+        if (smoothVal[i] > 3500) {
+            sensorFault = true;
+        }
+    }
+}
+
+void updateSafety(float kneeAngle) {
+    checkJointSafety(kneeAngle);
+    checkIMUSafety(thighAngle, shankAngle);
+    checkEMGSafety();
+
+    if (jointFault || sensorFault) {
+        systemFault = true;
+        digitalWrite(LED_BUILTIN, HIGH);
+    }
+}
+
 void setup() {
     Serial.begin(115200);
+    delay(50);
     pinMode(LED_BUILTIN, OUTPUT);
 
-    // --- INITIALIZE WIFI & ESP-NOW ---
     WiFi.mode(WIFI_STA);
     if (esp_now_init() != ESP_OK) {
         Serial.println("Error initializing ESP-NOW");
         return;
     }
-    
     esp_now_register_recv_cb(OnDataRecv);
 
     memcpy(peerInfo.peer_addr, broadcastAddress, 6);
@@ -127,12 +188,10 @@ void setup() {
         return;
     }
 
-    // Initialize Bus 1: IMUs
     I2C_IMU.begin(I2C_SDA_IMU, I2C_SCL_IMU, 100000); 
     if (!mpuThigh.begin(0x68, &I2C_IMU)) Serial.println("Thigh MPU Fail!");
     if (!mpuShank.begin(0x69, &I2C_IMU)) Serial.println("Shank MPU Fail!");
 
-    // Initialize Bus 2: ADS1115
     I2C_ADS.begin(I2C_SDA_ADS, I2C_SCL_ADS, 400000);
     if (!ads.begin(0x48, &I2C_ADS)) Serial.println("ADS1115 Fail!");
     ads.setDataRate(RATE_ADS1115_860SPS);
@@ -143,7 +202,6 @@ void setup() {
 }
 
 void loop() {
-    // Local serial command check
     if (Serial.available() > 0) {
         char cmd = Serial.read();
         if (cmd == 'r') { 
@@ -160,22 +218,33 @@ void loop() {
     sensors_event_t aT, gT, tempT, aS, gS, tempS;
     mpuThigh.getEvent(&aT, &gT, &tempT);
     mpuShank.getEvent(&aS, &gS, &tempS);
-    float accelAngleT = atan2(aT.acceleration.y, aT.acceleration.z) * 180 / PI;
-    thighAngle = 0.96 * (thighAngle + gT.gyro.x * dt * (180/PI)) + 0.04 * accelAngleT;
-    float accelAngleS = atan2(aS.acceleration.y, aS.acceleration.z) * 180 / PI;
-    shankAngle = 0.96 * (shankAngle + gS.gyro.x * dt * (180/PI)) + 0.04 * accelAngleS;
-    float kneeAngle = thighAngle - shankAngle;
+
+    float accelAngleT = atan2(-aT.acceleration.x, aT.acceleration.z) * 180 / PI;
+    thighAngle = 0.96 * (thighAngle - gT.gyro.y * dt * (180/PI)) + 0.04 * accelAngleT;
+
+    float accelAngleS = atan2(-aS.acceleration.y, aS.acceleration.x) * 180 / PI;
+    shankAngle = 0.96 * (shankAngle - gS.gyro.z * dt * (180/PI)) + 0.04 * accelAngleS;
+
+    float rawDiff = thighAngle - shankAngle;
+
+    while (rawDiff > 180) rawDiff -= 360;
+    while (rawDiff < -180) rawDiff += 360;
+
+    float kneeAngle = rawDiff + 180.0; 
+
+    updateSafety(kneeAngle);
 
     for (int i = 0; i < 4; i++) {
-        float rms = getProcessedRMS(i);
-        smoothVal[i] = rms;
+        smoothVal[i] = getProcessedRMS(i);
     }
 
     static unsigned long plotLast = 0;
-    if (millis() - plotLast > 100) {  // 10 Hz update
+    if (millis() - plotLast > 100) {
         plotLast = millis();
-        myData.legID = 1; 
+
+        myData.legID = 2;
         myData.kneeAngle = kneeAngle;
+        myData.shankAngle = shankAngle;
         myData.emg1 = smoothVal[0];
         myData.emg2 = smoothVal[1];
         myData.emg3 = smoothVal[2];
@@ -184,11 +253,17 @@ void loop() {
         esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
         if(result != ESP_OK) Serial.println("ESP-NOW Send Error");
 
-        Serial.print("Min:-180,Max:180,");
-        Serial.print("Knee_Angle:"); Serial.print(myData.kneeAngle);
-        Serial.print(",EMG1:"); Serial.print(myData.emg1);
-        Serial.print(",EMG2:"); Serial.print(myData.emg2);
-        Serial.print(",EMG3:"); Serial.print(myData.emg3);
-        Serial.print(",EMG4:"); Serial.println(myData.emg4);
+        Serial.print("Leg 2 | Knee: "); 
+        Serial.print(kneeAngle);
+
+        Serial.print(" | Shank: ");
+        Serial.print(shankAngle);
+
+        Serial.print(" | EMG: "); 
+        for (int i=0; i<4; i++) {
+            Serial.print(smoothVal[i]);
+            Serial.print(" ");
+        }
+        Serial.println();
     }
 }
