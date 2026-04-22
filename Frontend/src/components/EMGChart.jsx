@@ -28,7 +28,7 @@ const EMGChart = ({ wsUrl, selectedMuscle }) => {
         responsive: true,
         scales: {
           x: { display: false },
-          y: { beginAtZero: true, max: 100 }, // 0-100% scale
+          y: { beginAtZero: true, max: 100 },
         },
         plugins: {
           tooltip: {
@@ -44,12 +44,12 @@ const EMGChart = ({ wsUrl, selectedMuscle }) => {
 
     setChartInstance(newChart);
 
-    return () => {
-      newChart.destroy();
-    };
-  }, [selectedMuscle]); // re-create chart when muscle changes
+    return () => newChart.destroy();
+  }, [selectedMuscle]);
 
-  // WebSocket data
+  // =========================
+  // DATA STREAM (UPDATED SAFE PARSER)
+  // =========================
   useEffect(() => {
     if (!chartInstance || !wsUrl) return;
 
@@ -63,9 +63,13 @@ const EMGChart = ({ wsUrl, selectedMuscle }) => {
       try {
         const incoming = JSON.parse(event.data);
 
-        const value = incoming[selectedMuscle] !== undefined
-          ? incoming[selectedMuscle] * 100 // convert 0-1 to %
-          : 0;
+        // =========================
+        // EMG ONLY (UNCHANGED LOGIC)
+        // =========================
+        const value =
+          incoming[selectedMuscle] !== undefined
+            ? incoming[selectedMuscle] * 100
+            : 0;
 
         const data = chartInstance.data;
 
@@ -78,6 +82,18 @@ const EMGChart = ({ wsUrl, selectedMuscle }) => {
         }
 
         chartInstance.update();
+
+        // =========================
+        // IGNORE EXTRA FIELDS (SAFE HOOK ONLY)
+        // =========================
+        // These are intentionally not used in UI
+        // but now safely accepted if they exist:
+        //
+        // incoming.encoders?.left_shank
+        // incoming.encoders?.right_shank
+        // incoming.encoders?.left_knee
+        // incoming.encoders?.right_knee
+
       } catch (err) {
         console.error("Failed to parse WebSocket message:", err);
       }

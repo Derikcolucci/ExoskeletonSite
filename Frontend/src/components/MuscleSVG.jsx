@@ -9,7 +9,7 @@ export default function MuscleSVG({ activation, kneeAngles = {} }) {
     const svgElement = wrapperRef.current.querySelector("svg");
     if (!svgElement) return;
 
-    // 🔴 Update muscle colors
+    // 🔴 Update muscle colors (unchanged — already correct)
     Object.entries(activation).forEach(([muscleId, value]) => {
       const muscleGroup = svgElement.querySelector(`#${muscleId}`);
       if (muscleGroup) {
@@ -22,16 +22,16 @@ export default function MuscleSVG({ activation, kneeAngles = {} }) {
       }
     });
 
-    // 🟢 OPTIONAL: Update knee angle text inside SVG (if IDs exist)
+    // 🟢 FIXED: match actual keys from backend/frontend
     const leftText = svgElement.querySelector("#left_knee_text");
     const rightText = svgElement.querySelector("#right_knee_text");
 
-    if (leftText && kneeAngles.left !== undefined) {
-      leftText.textContent = `${kneeAngles.left.toFixed(1)}°`;
+    if (leftText && kneeAngles.left_knee_angle !== undefined) {
+      leftText.textContent = `${kneeAngles.left_knee_angle.toFixed(1)}°`;
     }
 
-    if (rightText && kneeAngles.right !== undefined) {
-      rightText.textContent = `${kneeAngles.right.toFixed(1)}°`;
+    if (rightText && kneeAngles.right_knee_angle !== undefined) {
+      rightText.textContent = `${kneeAngles.right_knee_angle.toFixed(1)}°`;
     }
 
   }, [activation, kneeAngles]);
@@ -45,7 +45,7 @@ export default function MuscleSVG({ activation, kneeAngles = {} }) {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        position: "relative", // keep for optional SVG text
+        position: "relative",
       }}
     >
       <MusclesSVG
